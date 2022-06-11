@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Author: George Mu'ammar george.muammar@wfp.org -->  
+    <title>Filter Notifications</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript">
+        var message="";
+		var UID="";
+		var warningNotification="";
+		var errorNotification="";
+	  
+	
+function startit() {
+document.getElementById("ErrorMessage").innerHTML="Retrieving your preferences"
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+errorNotification = "";
+warningNotification = "";
+UID = urlParams.get('UID');
+var message="";
+postit(false,"","");
+}
+
+function postit(button,notificationKeyword,notificationKeywordValue)
+{
+if (button) {
+  document.getElementById("ErrorMessage").innerHTML="Sending your preferences";
+  document.getElementById('ReviewForm').style.display='none';
+}
+
+
+var payload = "{\r\n   \"UID\": \""+ UID + "\" ,\r\n \"" + notificationKeyword + "\": "+ notificationKeywordValue + "\r\n }";
+console.log("payload: " + payload);
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "https://prod-247.westeurope.logic.azure.com:443/workflows/1af7e3e6c89944e19baa7f5efcf1ffbe/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uEvkcHxMAJCzk1_b7O0kpu3WA5iQVRq1nrGcSDdaEbU",
+  "method": "POST",
+    beforeSend: function(){
+		document.getElementById("StatusMessage").innerHTML="Sending your preferences... please don't close the browser.";
+        },
+        success: function(data) {
+		console.log("success: "+data.responseText);
+		document.getElementById("StatusMessage").innerHTML=data.responseText;
+		for (var i=0;i++;i<2) {document.getElementById("warningNotification").options[i].selected = (document.getElementById("warningNotification").options[i]==data.warningNotificationValue)};
+		for (var i=0;i++;i<2) {document.getElementById("errorNotification").options[i].selected = (document.getElementById("errorNotification").options[i]==data.errorNotificationValue)};
+
+		document.getElementById('ReviewForm').style.display='block';
+        },				
+		error: function(data,statustext) {
+		console.log("error: "+data.responseText);
+		document.getElementById("StatusMessage").innerHTML=data.responseText;
+		document.getElementById('ReviewForm').style.display='block';
+
+			},
+
+     dataType: "json",
+	 
+  "headers": {
+    "Content-Type": "application/json",
+    "cache-control": "no-cache"
+  },
+  "processData": false,
+  "data": payload
+};
+
+$.ajax(settings);
+}
+
+	</script>
+
+  </head>
+<body>
+<table border="0"><tr><td><font size="6" face="Open Sans">R2</td><td><font size="6" face="Open Sans">R2 Notifications Filter</td></tr></table>
+<h1 name="ErrorMessage" id="ErrorMessage">Loading your preferences...</h1>
+<br>
+
+<h2 name="StatusMessage" id="StatusMessage">Your browser does not support Javascript. Sorry, this won't work</h2>   
+<div id="loading">&nbsp;</div>
+<div name="ReviewForm" id="ReviewForm" visibility="hidden" style="display: block;">        
+<hr><br><br>Please enable / disable the following type of notifications:<BR><BR>
+<select id="warningNotification" name="warningNotification" size="1">
+<option value="On">On</option>
+<option value="Off">Off</option>
+</select>
+<BR><BR>
+<select id="errorNotification" name="errorNotification" size="1">
+<option value="On">On</option>
+<option value="Off">Off</option>
+</select>
+<BR><BR>
+
+<input type="submit" value="Submit your preferences" onclick="postit(true,"warningNotification",document.getElementById("warningNotification").value);postit(true,"errorNotification",document.getElementById("errorNotification").value);"><br>
+</div>
+</div>
+
+<script>
+document.getElementById('ReviewForm').style.display='none';
+startit();
+</script>
+</body></html>
