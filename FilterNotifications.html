@@ -32,7 +32,7 @@ if (button) {
 }
 
 
-var payload = "{\r\n   \"UID\": \""+ UID + "\" ,\r\n \"" + notificationKeyword + "\": \""+ notificationKeywordValue + "\"\r\n }";
+var payload = "{\r\n   \"UID\": \""+ UID + "\" ,\r\n \"notificationKeyword\":\"" + notificationKeyword + "\",\"notificationKeywordValue\":\""+ notificationKeywordValue + "\"\r\n }";
 console.log("payload: " + payload);
 var settings = {
   "async": true,
@@ -44,9 +44,12 @@ var settings = {
         },
         success: function(data) {
 		console.log("success: "+data.responseText);
+		console.log("success: "+data.warning);
+		console.log("success: "+data.error);
+		
 		document.getElementById("StatusMessage").innerHTML=data.responseText;
-		for (var i=0;i++;i<2) {document.getElementById("warningNotification").options[i].selected = (document.getElementById("warningNotification").options[i]==data.warningNotificationValue)};
-		for (var i=0;i++;i<2) {document.getElementById("errorNotification").options[i].selected = (document.getElementById("errorNotification").options[i]==data.errorNotificationValue)};
+		for (var i=0;i<2;i++) {console.log(document.getElementById("warningNotification").options[i].text);document.getElementById("warningNotification").options[i].selected = (document.getElementById("warningNotification").options[i].text==data.warning)};
+		for (var i=0;i<2;i++) {console.log(document.getElementById("errorNotification").options[i].text);document.getElementById("errorNotification").options[i].selected = (document.getElementById("errorNotification").options[i].text==data.error)};
 
 		document.getElementById('ReviewForm').style.display='block';
         },				
@@ -82,18 +85,21 @@ $.ajax(settings);
 <div id="loading">&nbsp;</div>
 <div name="ReviewForm" id="ReviewForm" visibility="hidden" style="display: block;">        
 <hr><br><br>Please enable / disable the following type of notifications:<BR><BR>
+<label for="warningNotification">Warning:</label>
 <select id="warningNotification" name="warningNotification" size="1">
-<option value="On">On</option>
+ <option value="On">On</option>
 <option value="Off">Off</option>
 </select>
 <BR><BR>
+<label for="errorNotification">Error: </label>
 <select id="errorNotification" name="errorNotification" size="1">
 <option value="On">On</option>
 <option value="Off">Off</option>
 </select>
 <BR><BR>
 
-<input type="submit" value="Submit your preferences" onclick="postit(true,'warningNotification',document.getElementById('warningNotification').value);postit(true,'errorNotification',document.getElementById('errorNotification').value);"></div>
+<input type="submit" value="Submit your preferences" onclick="postit(true,'warning',document.getElementById('warningNotification').value);postit(true,'error',document.getElementById('errorNotification').value);">
+</div>
 </div>
 
 <script>
