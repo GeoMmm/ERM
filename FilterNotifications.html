@@ -21,19 +21,42 @@ errorNotification = "";
 warningNotification = "";
 UID = urlParams.get('UID');
 var message="";
-postit(false,"","");
+postit(false);
 }
 
-function postit(button,notificationKeyword,notificationKeywordValue)
+function getFormValues(formId) {
+    var inputs = document.querySelectorAll('select');    
+    var formValues = {};
+
+    for (var i = 0; i < inputs.length; i++) {
+	  console.log(inputs[i].id);
+      formValues[inputs[i].id] = inputs[i].value;
+    }
+
+    return formValues;
+}
+
+
+function postit(button)
 {
+var payload= "{\r\n   \"UID\": \""+ UID + "\", \"keywords\":[";
 if (button) {
   document.getElementById("ErrorMessage").innerHTML="Sending your preferences";
   document.getElementById('ReviewForm').style.display='none';
+  var notifications = getFormValues('ReviewForm');
+  console.log("notifications=",notifications);
+  for (let i in notifications) 
+  {
+    
+	console.log(i);
+	payload += " \r\n[\"" + i.replace('notification','') + "\",\"" + notifications[i] + "\"],";
+	};
 }
 
-
-var payload = "{\r\n   \"UID\": \""+ UID + "\" ,\r\n \"notificationKeyword\":\"" + notificationKeyword + "\",\"notificationKeywordValue\":\""+ notificationKeywordValue + "\"\r\n }";
+var payload = payload + "]\r\n }";
 console.log("payload: " + payload);
+var theForm = document.getElementById('ReviewForm');
+var element,label;
 var settings = {
   "async": true,
   "crossDomain": true,
@@ -43,22 +66,75 @@ var settings = {
 		document.getElementById("StatusMessage").innerHTML="Sending your preferences... please don't close the browser.";
         },
         success: function(data) {
-		console.log("success: "+data.responseText);
-		console.log("success: "+data.warning);
-		console.log("success: "+data.error);
 		
 		document.getElementById("StatusMessage").innerHTML=data.responseText;
-		for (var i=0;i<2;i++) {console.log(document.getElementById("warningNotification").options[i].text);document.getElementById("warningNotification").options[i].selected = (document.getElementById("warningNotification").options[i].text==data.warning)};
-		for (var i=0;i<2;i++) {console.log(document.getElementById("errorNotification").options[i].text);document.getElementById("errorNotification").options[i].selected = (document.getElementById("errorNotification").options[i].text==data.error)};
 
-		document.getElementById('ReviewForm').style.display='block';
+		for (var key in data) {	
+			if (key != "responseText")
+			{
+			/// delete existing controls
+///				console.log(key + "=" + data[key]);
+///				element = document.createElement("label");
+///				element.setAttribute("for",key+"notification");
+///				element.innerHTML="<BR><BR>" + key + ":&nbsp;";
+				element = document.createElement("select");
+				element.setAttribute("type", key+"notification");
+				element.setAttribute("name", key+"notification");
+				element.setAttribute("id", key+"notification");
+				element.setAttribute("label",key+"notification");
+				element.setAttribute("value", data[key]);
+
+				var opt = document.createElement("option"); 
+				opt.text = 'On';
+				opt.value = 'On';
+				opt.selected = (data[key]=='On');
+				element.options.add(opt);
+				var opt = document.createElement("option"); 
+				opt.text = 'Off';
+				opt.value = 'Off';
+				opt.selected = (data[key]=='Off');
+				element.options.add(opt);
+				var opt = document.createElement("option"); 
+				opt.text = 'Ask';
+				opt.value = 'Ask';
+				opt.selected = false;
+				element.options.add(opt);
+				console.log(key + "," + data[key])
+				
+				if (button) {
+					var oldElement = document.getElementById(key+"notification");
+					theForm.replaceChild(element,oldElement);
+				} else {
+					var label = document.createElement("div");
+					label.innerHTML=key + ":&nbsp;";
+					theForm.appendChild(label);
+					theForm.appendChild(element);
+				}
+			}
+		};
+		theForm.appendChild(document.createElement("br"));
+		var element = document.createElement("button");
+		element.innerHTML="Submit preferences";
+		element.setAttribute("name","Submit");
+		element.setAttribute("id","Submit");
+		element.text="Submit preferences";	
+		element.type="button";
+		element.onclick = function() {postit(true)};
+		if (button) {
+			oldElement = document.getElementById("Submit");
+			theForm.replaceChild(element,oldElement);
+			} else {
+			var label = document.createElement("div");
+			label.innerHTML="<BR>";
+			theForm.appendChild(label);
+			theForm.appendChild(element);
+		}
+		theForm.style.display='block';
         },				
 		error: function(data,statustext) {
-		console.log("error: "+data.responseText);
 		document.getElementById("StatusMessage").innerHTML=data.responseText;
 		document.getElementById('ReviewForm').style.display='block';
-
-			},
+	},
 
      dataType: "json",
 	 
@@ -77,28 +153,15 @@ $.ajax(settings);
 
   </head>
 <body>
-<table border="0"><tr><td><font size="6" face="Open Sans">R2</td><td><font size="6" face="Open Sans">R2 Notifications Filter</td></tr></table>
+<font size="6" face="Open Sans">R2 Notifications Filter<font size="2">
 <h1 name="ErrorMessage" id="ErrorMessage">Loading your preferences...</h1>
 <br>
 
 <h2 name="StatusMessage" id="StatusMessage">Your browser does not support Javascript. Sorry, this won't work</h2>   
 <div id="loading">&nbsp;</div>
 <div name="ReviewForm" id="ReviewForm" visibility="hidden" style="display: block;">        
-<hr><br><br>Please enable / disable the following type of notifications:<BR><BR>
-<label for="warningNotification">Warning:</label>
-<select id="warningNotification" name="warningNotification" size="1">
- <option value="On">On</option>
-<option value="Off">Off</option>
-</select>
-<BR><BR>
-<label for="errorNotification">Error: </label>
-<select id="errorNotification" name="errorNotification" size="1">
-<option value="On">On</option>
-<option value="Off">Off</option>
-</select>
-<BR><BR>
-	<B>Any other notification not listed above will be asked about on a case by case basis</B>
-<input type="submit" value="Submit your preferences" onclick="postit(true,'warning',document.getElementById('warningNotification').value);postit(true,'error',document.getElementById('errorNotification').value);">
+<hr><br><br>Please enable / disable the following type of notifications:<BR>
+ 
 </div>
 </div>
 
