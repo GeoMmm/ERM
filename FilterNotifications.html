@@ -9,16 +9,16 @@
 <script type="text/javascript">
         var message="";
 		var UID="";
-		var warningNotification="";
-		var errorNotification="";
+//		var warningNotification="";
+//		var errorNotification="";
 	  
 	
 function startit() {
 document.getElementById("ErrorMessage").innerHTML="Retrieving your preferences"
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
-errorNotification = "";
-warningNotification = "";
+///errorNotification = "";
+///warningNotification = "";
 UID = urlParams.get('UID');
 var message="";
 postit(false);
@@ -37,22 +37,20 @@ function getFormValues(formId) {
 }
 
 
-function postit(button)
+function postit(submit)
 {
 var payload= "{\r\n   \"UID\": \""+ UID + "\", \"keywords\":[";
-if (button) {
+if (submit) {
   document.getElementById("ErrorMessage").innerHTML="Sending your preferences";
   document.getElementById('ReviewForm').style.display='none';
   var notifications = getFormValues('ReviewForm');
   console.log("notifications=",notifications);
   for (let i in notifications) 
-  {
-    
+  {    
 	console.log(i);
 	payload += " \r\n[\"" + i.replace('notification','') + "\",\"" + notifications[i] + "\"],";
 	};
 }
-
 var payload = payload + "]\r\n }";
 console.log("payload: " + payload);
 var theForm = document.getElementById('ReviewForm');
@@ -78,7 +76,7 @@ var settings = {
 ///				element.setAttribute("for",key+"notification");
 ///				element.innerHTML="<BR><BR>" + key + ":&nbsp;";
 				element = document.createElement("select");
-				element.setAttribute("type", key+"notification");
+///				element.setAttribute("type", key+"notification"); type doesn't exist
 				element.setAttribute("name", key+"notification");
 				element.setAttribute("id", key+"notification");
 				element.setAttribute("label",key+"notification");
@@ -101,7 +99,7 @@ var settings = {
 				element.options.add(opt);
 				console.log(key + "," + data[key])
 				
-				if (button) {
+				if (submit) {
 					var oldElement = document.getElementById(key+"notification");
 					theForm.replaceChild(element,oldElement);
 				} else {
@@ -120,7 +118,7 @@ var settings = {
 		element.text="Submit preferences";	
 		element.type="button";
 		element.onclick = function() {postit(true)};
-		if (button) {
+		if (submit) {
 			oldElement = document.getElementById("Submit");
 			theForm.replaceChild(element,oldElement);
 			} else {
@@ -159,7 +157,10 @@ $.ajax(settings);
 
 <h2 name="StatusMessage" id="StatusMessage">Your browser does not support Javascript. Sorry, this won't work</h2>   
 <div id="loading">&nbsp;</div>
-<div name="ReviewForm" id="ReviewForm" visibility="hidden" style="display: block;">        
+<div name="ReviewForm" id="ReviewForm" visibility="hidden" style="display: block;">
+<select name="All" id="All">
+<option value="DEFER">Defer    
+<option value="Defer" name="Defer" id="Defer">        
 <hr><br><br>Please enable / disable the following type of notifications:<BR>
  
 </div>
